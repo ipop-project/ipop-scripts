@@ -57,6 +57,68 @@ function options
     echo $user_input
 }
 
+function setup-python
+{
+    #Python dependencies for visualizer and ipop python tests
+    sudo apt-get install -y python python-pip python-lxc
+    sudo pip install --upgrade pip
+    sudo pip install pymongo sleekxmpp psutil
+}
+
+function setup-mongo
+{
+    if [[  ! ( "$is_external" = true ) ]]; then
+        #Install and start mongodb for use ipop python tests
+        sudo apt-get -y install mongodb
+    fi
+}
+
+function setup-build-deps
+{
+    sudo apt install -y software-properties-common git make libssl-dev g++-4.9
+    sudo update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-4.9 10
+}
+
+function setup-base-container
+{
+ echo "hi"
+}
+
+function setup-ejabberd
+{
+ echo "hello"
+}
+
+function setup-visualizer
+{
+    if ! [ -z $1 ]; then
+        visualizer_repo=$1
+    else
+        visualizer_repo=$DEFAULT_VISUALIZER_REPO
+    fi
+    if ! [ -z $2 ]; then
+        visualizer_branch=$2
+    else
+        visualizer_branch=$DEFAULT_VISUALIZER_BRANCH
+    fi
+
+    if ! [ -e $VISUALIZER ]; then
+        if [ -z "$visualizer_repo" ]; then
+            echo -e "\e[1;31mEnter visualizer github URL\e[0m"
+            read visualizer_repo
+        fi
+        git clone $visualizer_repo
+        if [ -z "$visualizer_branch" ]; then
+           echo -e "Enter git repo branch name:"
+           read visualizer_branch
+        fi
+        cd $VISUALIZER
+        git checkout $visualizer_branch
+        # Use visualizer setup script
+        cd Setup && ./setup.sh && cd ../..
+    fi
+}
+
 function configure
 {
     # if argument is true mongodb and ejabberd won't be installed
@@ -74,8 +136,8 @@ function configure
     fi
 
     #Prepare Tincan for compilation
-    sudo add-apt-repository -y ppa:ubuntu-toolchain-r/test
-    sudo apt-get update -y
+    #sudo add-apt-repository -y ppa:ubuntu-toolchain-r/test
+    #sudo apt-get update -y
     sudo apt-get -y install lxc g++-4.9
     sudo update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-4.9 10
 
@@ -88,10 +150,10 @@ function configure
 
     # install controller dependencies
     if [ $VPNMODE = "switch" ]; then
-        sudo pip install sleekxmpp pystun psutil
+        sudo pip install sleekxmpp psutil
     else
         sudo chroot /var/lib/lxc/default/rootfs apt-get -y install 'python-pip'
-        sudo chroot /var/lib/lxc/default/rootfs pip install 'sleekxmpp' pystun psutil
+        sudo chroot /var/lib/lxc/default/rootfs pip install 'sleekxmpp' psutil
     fi
 
     echo 'lxc.cgroup.devices.allow = c 10:200 rwm' | sudo tee --append $DEFAULT_LXC_CONFIG
@@ -457,32 +519,7 @@ function ipop-kill
 
 function visualizer-start
 {
-    if ! [ -z $1 ]; then
-        visualizer_repo=$1
-    else
-        visualizer_repo=$DEFAULT_VISUALIZER_REPO
-    fi
-    if ! [ -z $2 ]; then
-        visualizer_branch=$2
-    else
-        visualizer_branch=$DEFAULT_VISUALIZER_BRANCH
-    fi
 
-    if ! [ -e $VISUALIZER ]; then
-        if [ -z "$visualizer_repo" ]; then
-            echo -e "\e[1;31mEnter visualizer github URL\e[0m"
-            read visualizer_repo
-        fi
-        git clone $visualizer_repo
-        if [ -z "$visualizer_branch" ]; then
-           echo -e "Enter git repo branch name:"
-           read visualizer_branch
-        fi
-        cd $VISUALIZER
-        git checkout $visualizer_branch
-        # Use visualizer setup script
-        cd Setup && ./setup.sh && cd ../..
-    fi
     cd $VISUALIZER && ./visualizer start && cd .. && echo "Visualizer started"
 }
 
