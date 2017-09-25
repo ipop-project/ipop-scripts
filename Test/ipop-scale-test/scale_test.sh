@@ -24,10 +24,6 @@ max=$(cat $OVERRIDES_FILE 2>/dev/null | grep MAX | awk '{print $2}')
 NET_TEST=$(ip route get 8.8.8.8)
 NET_DEV=$(echo $NET_TEST | awk '{print $5}')
 NET_IP4=$(echo $NET_TEST | awk '{print $7}')
-TURN_USERS="/etc/turnserver/turnusers.txt"
-TURN_ROOT_CONFIG="/etc/turnserver/turnserver.conf"
-TURN_CONFIG="./config/turnserver.conf"
-
 
 function help()
 {
@@ -81,12 +77,67 @@ function setup-build-deps
 
 function setup-base-container
 {
- echo "hi"
+    # Install ubuntu OS in the lxc-container
+    sudo lxc-create -n default -t ubuntu
+    sudo chroot /var/lib/lxc/default/rootfs apt-get -y update
+    sudo chroot /var/lib/lxc/default/rootfs apt-get -y install $DEFAULT_LXC_PACKAGES
+    sudo chroot /var/lib/lxc/default/rootfs apt-get -y install software-properties-common python-software-properties
+
+    # install controller dependencies
+    if [ $VPNMODE = "switch" ]; then
+        sudo pip install sleekxmpp psutil
+    else
+        sudo chroot /var/lib/lxc/default/rootfs apt-get -y install 'python-pip'
+        sudo chroot /var/lib/lxc/default/rootfs pip install 'sleekxmpp' psutil
+    fi
+
+    echo 'lxc.cgroup.devices.allow = c 10:200 rwm' | sudo tee --append $DEFAULT_LXC_CONFIG
 }
 
 function setup-ejabberd
 {
- echo "hello"
+     if [[ ! ( "$is_external" = true ) ]]; then
+        # Install local ejabberd server
+        sudo apt-get -y install ejabberd
+        # prepare ejabberd server config file
+        # restart ejabberd service
+        if [ $OS_VERSION = '14.04' ]; then
+            sudo cp ./config/ejabberd.cfg /etc/ejabberd/ejabberd.cfg
+            sudo ejabberdctl restart
+        else
+            sudo apt-get -y install erlang-p1-stun
+            sudo cp ./config/ejabberd.yml /etc/ejabberd/ejabberd.yml
+            sudo systemctl restart ejabberd.service
+        fi
+        # Wait for ejabberd service to start
+        sleep 15
+        # Create admin user
+        sudo ejabberdctl register admin ejabberd password
+    fi
+}
+
+function setup-network
+{
+    # configure network
+    sudo iptables --flush
+    read -p "Use symmetric NATS? (Y/n) " use_symmetric_nat
+    if [[ $use_symmetric_nat =~ [Nn]([Oo])* ]]; then
+        # replace symmetric NATs (MASQUERAGE) with full-cone NATs (SNAT)
+        sudo iptables -t nat -A POSTROUTING -o $NET_DEV -j SNAT --to-source $NET_IP4
+    else
+        sudo iptables -t nat -A POSTROUTING -o $NET_DEV -j MASQUERADE
+    fi
+
+    # open TCP ports (for ejabberd)
+    for i in 5222 5269 5280; do
+        sudo iptables -A INPUT -p tcp --dport $i -j ACCEPT
+        sudo iptables -A OUTPUT -p tcp --dport $i -j ACCEPT
+    done
+    # open UDP ports (for STUN and TURN)
+    for i in 3478 19302; do
+        sudo iptables -A INPUT -p udp --sport $i -j ACCEPT
+        sudo iptables -A OUTPUT -p udp --sport $i -j ACCEPT
+    done
 }
 
 function setup-visualizer
@@ -124,92 +175,25 @@ function configure
     # if argument is true mongodb and ejabberd won't be installed
     is_external=$1
 
-    #Python dependencies for visualizer and ipop python tests
-    sudo apt-get install -y python python-pip python-lxc
+    #Install python dependencies
+    setup-python
 
-    sudo pip install --upgrade pip
-    sudo pip install pymongo
+    #Install mongodb on current machine
+    setup-mongo
 
-    if [[  ! ( "$is_external" = true ) ]]; then
-        #Install and start mongodb for use ipop python tests
-        sudo apt-get -y install mongodb
-    fi
+    #Install dependencies required for building tincan
+    setup-build-deps
 
-    #Prepare Tincan for compilation
-    #sudo add-apt-repository -y ppa:ubuntu-toolchain-r/test
-    #sudo apt-get update -y
-    sudo apt-get -y install lxc g++-4.9
-    sudo update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-4.9 10
+    #Create default container that will be duplicated to create nodes
+    setup-base-container
 
+    #configure iptables needed for proper network connectivity
+    setup-network
 
-    # Install ubuntu OS in the lxc-container
-    sudo lxc-create -n default -t ubuntu
-    sudo chroot /var/lib/lxc/default/rootfs apt-get -y update
-    sudo chroot /var/lib/lxc/default/rootfs apt-get -y install $DEFAULT_LXC_PACKAGES
-    sudo chroot /var/lib/lxc/default/rootfs apt-get -y install software-properties-common python-software-properties
+    #Install and setup ejabberd with admin user
+    setup-ejabberd
 
-    # install controller dependencies
-    if [ $VPNMODE = "switch" ]; then
-        sudo pip install sleekxmpp psutil
-    else
-        sudo chroot /var/lib/lxc/default/rootfs apt-get -y install 'python-pip'
-        sudo chroot /var/lib/lxc/default/rootfs pip install 'sleekxmpp' psutil
-    fi
-
-    echo 'lxc.cgroup.devices.allow = c 10:200 rwm' | sudo tee --append $DEFAULT_LXC_CONFIG
-
-    if [[ ! ( "$is_external" = true ) ]]; then
-        # Install turnserver
-        sudo apt-get install -y turnserver
-        echo "containeruser:password:ipopvpn.org:authorized" | sudo tee --append $TURN_USERS
-        # use IP aliasing to bind turnserver to this ipv4 address
-        sudo ifconfig $NET_DEV:0 $NET_IP4 up
-        # prepare turnserver config file
-        sudo cp $TURN_CONFIG $TURN_ROOT_CONFIG
-        sudo sed -i "s/listen_address = .*/listen_address = { \"$NET_IP4\" }/g" $TURN_ROOT_CONFIG
-        sudo systemctl restart turnserver
-    fi
-
-    # configure network
-    sudo iptables --flush
-    read -p "Use symmetric NATS? (Y/n) " use_symmetric_nat
-    if [[ $use_symmetric_nat =~ [Nn]([Oo])* ]]; then
-        # replace symmetric NATs (MASQUERAGE) with full-cone NATs (SNAT)
-        sudo iptables -t nat -A POSTROUTING -o $NET_DEV -j SNAT --to-source $NET_IP4
-    else
-        sudo iptables -t nat -A POSTROUTING -o $NET_DEV -j MASQUERADE
-    fi
-
-
-    # open TCP ports (for ejabberd)
-    for i in 5222 5269 5280; do
-        sudo iptables -A INPUT -p tcp --dport $i -j ACCEPT
-        sudo iptables -A OUTPUT -p tcp --dport $i -j ACCEPT
-    done
-    # open UDP ports (for STUN and TURN)
-    for i in 3478 19302; do
-        sudo iptables -A INPUT -p udp --sport $i -j ACCEPT
-        sudo iptables -A OUTPUT -p udp --sport $i -j ACCEPT
-    done
-
-    if [[ ! ( "$is_external" = true ) ]]; then
-        # Install local ejabberd server
-        sudo apt-get -y install ejabberd
-        # prepare ejabberd server config file
-        # restart ejabberd service
-        if [ $OS_VERSION = '14.04' ]; then
-            sudo cp ./config/ejabberd.cfg /etc/ejabberd/ejabberd.cfg
-            sudo ejabberdctl restart
-        else
-            sudo apt-get -y install erlang-p1-stun
-            sudo cp ./config/ejabberd.yml /etc/ejabberd/ejabberd.yml
-            sudo systemctl restart ejabberd.service
-        fi
-        # Wait for ejabberd service to start
-        sleep 15
-        # Create admin user
-        sudo ejabberdctl register admin ejabberd password
-    fi
+    #Install and setup net-visualizer
 }
 
 function containers-create
@@ -519,7 +503,6 @@ function ipop-kill
 
 function visualizer-start
 {
-
     cd $VISUALIZER && ./visualizer start && cd .. && echo "Visualizer started"
 }
 
