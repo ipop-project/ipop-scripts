@@ -194,6 +194,7 @@ function configure
     setup-ejabberd
 
     #Install and setup net-visualizer
+    setup-visualizer
 }
 
 function containers-create
@@ -278,8 +279,6 @@ function containers-create
                     error "A Tincan repo URL is required"
                 fi
             fi
-            git clone $tincan_repo_url
-
             if [ -z $tincan_branch ]; then
                 echo -e "Enter git repo branch name:"
                 read tincan_branch
@@ -344,10 +343,10 @@ function containers-create
         sudo cp -r ./Controllers/controller/ ./
 
         if [[ ! ( "$is_external" = true ) ]]; then
-            sudo ./node/node_config.sh config 1 GroupVPN $NET_IP4 $isvisual $topology_param containeruser password
+            sudo ./node/node_config.sh config 1 GroupVPN $NET_IP4 $isvisual $topology_param
             sudo ejabberdctl register "node1" ejabberd password
         else
-            sudo ./node/node_config.sh config 2 GroupVPN $NET_IP4 $isvisual $topology_param containeruser password
+            sudo ./node/node_config.sh config 2 GroupVPN $NET_IP4 $isvisual $topology_param
             sudo ejabberdctl register "node2" ejabberd password
         fi
 
@@ -358,6 +357,7 @@ function containers-create
             "
         done
     else
+        lxc_bridge_address="10.0.3.1"
         for i in $(seq $min $max); do
             sudo bash -c "
             lxc-copy -n default -N node$i;
@@ -368,7 +368,7 @@ function containers-create
             sudo cp ./ipop-tincan "/var/lib/lxc/node$i/rootfs$IPOP_HOME"
             sudo cp './node/node_config.sh' "/var/lib/lxc/node$i/rootfs$IPOP_HOME"
             sudo lxc-attach -n node$i -- bash -c "sudo chmod +x $IPOP_TINCAN; sudo chmod +x $IPOP_HOME/node_config.sh;"
-            sudo lxc-attach -n node$i -- bash -c "sudo $IPOP_HOME/node_config.sh config $i GroupVPN $NET_IP4 $isvisual $topology_param containeruser password"
+            sudo lxc-attach -n node$i -- bash -c "sudo $IPOP_HOME/node_config.sh config $i GroupVPN $NET_IP4 $isvisual $topology_param $lxc_bridge_address"
             echo "Container node$i started."
             sudo ejabberdctl register "node$i" ejabberd password
             for j in $(seq $min $max); do
