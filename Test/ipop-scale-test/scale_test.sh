@@ -77,6 +77,12 @@ function setup-build-deps
 
 function setup-base-container
 {
+
+    #Prepare Tincan for compilation
+    sudo add-apt-repository -y ppa:ubuntu-toolchain-r/test
+    sudo apt-get update -y
+    sudo apt-get -y install lxc
+    
     # Install ubuntu OS in the lxc-container
     sudo lxc-create -n default -t ubuntu
     sudo chroot /var/lib/lxc/default/rootfs apt-get -y update
