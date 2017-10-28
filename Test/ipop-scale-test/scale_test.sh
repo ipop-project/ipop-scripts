@@ -279,6 +279,7 @@ function containers-create
                     error "A Tincan repo URL is required"
                 fi
             fi
+            git clone $tincan_repo_url
             if [ -z $tincan_branch ]; then
                 echo -e "Enter git repo branch name:"
                 read tincan_branch
