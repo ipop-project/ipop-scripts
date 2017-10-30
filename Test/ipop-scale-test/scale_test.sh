@@ -96,8 +96,12 @@ function setup-base-container
         sudo chroot /var/lib/lxc/default/rootfs apt-get -y install python-pip
         sudo chroot /var/lib/lxc/default/rootfs pip install sleekxmpp psutil
     fi
-
-    echo 'lxc.cgroup.devices.allow = c 10:200 rwm' | sudo tee --append $DEFAULT_LXC_CONFIG
+    
+    config_grep=$(sudo grep "lxc.cgroup.devices.allow = c 10:200 rwm" "$DEFAULT_LXC_CONFIG")
+    if [ -z "$config_grep" ]; then
+        echo 'lxc.cgroup.devices.allow = c 10:200 rwm' | sudo tee --append $DEFAULT_LXC_CONFIG
+    fi
+    
 }
 
 function setup-ejabberd
