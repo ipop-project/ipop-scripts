@@ -86,7 +86,7 @@ function setup-base-container
     # Install ubuntu OS in the lxc-container
     sudo lxc-create -n default -t ubuntu
     sudo chroot /var/lib/lxc/default/rootfs apt-get -y update
-    sudo chroot /var/lib/lxc/default/rootfs apt-get -y install "$DEFAULT_LXC_PACKAGES"
+    sudo chroot /var/lib/lxc/default/rootfs apt-get -y install $DEFAULT_LXC_PACKAGES
     sudo chroot /var/lib/lxc/default/rootfs apt-get -y install software-properties-common python-software-properties
 
     # install controller dependencies
