@@ -105,6 +105,13 @@ function setup-ejabberd
      if [[ ! ( "$is_external" = true ) ]]; then
         # Install local ejabberd server
         sudo apt-get -y install ejabberd
+        echo "ejabberd has been installed!"
+        echo "Copying apparmor profile for ejabberdctl..."
+        sudo cp ./config/usr.sbin.ejabberdctl /etc/apparmor.d/usr.sbin.ejabberdctl
+        echo "Reloading apparmor profile for ejabberd..."
+        sudo apparmor_parser -r /etc/apparmor.d/usr.sbin.ejabberdctl
+        echo "Done!"
+
         # prepare ejabberd server config file
         # restart ejabberd service
         if [ $OS_VERSION = '14.04' ]; then
