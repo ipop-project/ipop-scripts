@@ -78,7 +78,7 @@ function setup-build-deps
 function setup-base-container
 {
 
-    #Prepare Tincan for compilation
+    # Install lxc
     sudo add-apt-repository -y ppa:ubuntu-toolchain-r/test
     sudo apt-get update -y
     sudo apt-get -y install lxc
@@ -187,6 +187,59 @@ function setup-visualizer
     fi
 }
 
+function setup-tincan
+{
+    if [ -e $TINCAN ]; then
+        echo "Using existing Tincan binary..."
+    else
+        if ! [ -e "./Tincan/trunk/build/" ]; then
+            if [ -z "$DEFAULT_TINCAN_REPO" ]; then
+                echo -e "\e[1;31mEnter github URL for Tincan\e[0m"
+                read DEFAULT_TINCAN_REPO
+                if [ -z "$DEFAULT_TINCAN_REPO" ] ; then
+                    error "A Tincan repo URL is required"
+                fi
+            fi
+            git clone $DEFAULT_TINCAN_REPO
+            if [ -z $DEFAULT_TINCAN_BRANCH ]; then
+                echo -e "Enter git repo branch name:"
+                read DEFAULT_TINCAN_BRANCH
+            fi
+            cd Tincan
+            git checkout $DEFAULT_TINCAN_BRANCH
+            cd ..
+        fi
+        cd ./Tincan/trunk/build/
+        echo "Building Tincan binary"
+        make
+        cd ../../..
+        cp ./Tincan/trunk/out/release/x64/ipop-tincan .
+    fi
+}
+
+function setup-controller
+{
+    if ! [ -e $CONTROLLER ]; then
+        if [ -z "$DEFAULT_CONTROLLERS_REPO" ]; then
+            echo -e "\e[1;31mEnter IPOP Controller github URL\e[0m"
+            read DEFAULT_CONTROLLERS_REPO
+            if [ -z "$DEFAULT_CONTROLLERS_REPO" ]; then
+                error "A controller repo URL is required"
+            fi
+        fi
+        git clone $DEFAULT_CONTROLLERS_REPO
+        if [ -z $DEFAULT_CONTROLLERS_BRANCH ]; then
+                echo -e "Enter git repo branch name:"
+                read DEFAULT_CONTROLLERS_BRANCH
+        fi
+        cd Controllers
+        git checkout $DEFAULT_CONTROLLERS_BRANCH
+        cd ..
+    else
+        echo "Using existing Controller repo..."
+    fi
+}
+
 function configure
 {
     # if argument is true mongodb and ejabberd won't be installed
@@ -212,6 +265,12 @@ function configure
 
     #Install and setup net-visualizer
     setup-visualizer
+
+    # Clone and build Tincan
+    setup-tincan
+
+    # Clone Controller
+    setup-controller
 }
 
 function containers-create
@@ -228,33 +287,12 @@ function containers-create
         container_count=$1
     fi
     if ! [ -z $2 ]; then
-        controller_repo_url=$2
-    else
-        controller_repo_url=$DEFAULT_CONTROLLERS_REPO
-    fi
-    if ! [ -z $3 ]; then
-        controller_branch=$3
-    else
-        controller_branch=$DEFAULT_CONTROLLERS_BRANCH
-    fi
-    if ! [ -z $4 ]; then
-        tincan_repo_url=$4
-    else
-        tincan_repo_url=$DEFAULT_TINCAN_REPO
-    fi
-
-    if ! [ -z $5 ]; then
-        tincan_branch=$5
-    else
-        tincan_branch=$DEFAULT_TINCAN_BRANCH
-    fi
-    if ! [ -z $6 ]; then
-        visualizer_enabled=$6
+        visualizer_enabled=$2
     else
         visualizer_enabled=$DEFAULT_VISUALIZER_ENABLED
     fi
-    if ! [ -z $7 ]; then
-        is_external=$7
+    if ! [ -z $3 ]; then
+        is_external=$3
     fi
 
     if [ -z "$container_count" ]; then
@@ -267,50 +305,6 @@ function containers-create
     echo $MODELINE >> $OVERRIDES_FILE
 
 
-    if ! [ -e $CONTROLLER ]; then
-        if [ -z "$controller_repo_url" ]; then
-            echo -e "\e[1;31mEnter IPOP Controller github URL\e[0m"
-            read controller_repo_url
-            if [ -z "$controller_repo_url" ]; then
-                error "A controller repo URL is required"
-            fi
-        fi
-        git clone $controller_repo_url
-        if [ -z $controller_branch ]; then
-                echo -e "Enter git repo branch name:"
-                read controller_branch
-        fi
-        cd Controllers
-        git checkout $controller_branch
-        cd ..
-    fi
-
-    if [ -e $TINCAN ]; then
-        echo "Using existing Tincan binary..."
-    else
-        if ! [ -e "./Tincan/trunk/build/" ]; then
-            if [ -z "$tincan_repo_url" ]; then
-                echo -e "\e[1;31mEnter github URL for Tincan (default: $DEFAULT_TINCAN_REPO) \e[0m"
-                read tincan_repo_url
-                if [ -z "$tincan_repo_url" ] ; then
-                    error "A Tincan repo URL is required"
-                fi
-            fi
-            git clone $tincan_repo_url
-            if [ -z $tincan_branch ]; then
-                echo -e "Enter git repo branch name:"
-                read tincan_branch
-            fi
-            cd Tincan
-            git checkout $tincan_branch
-            cd ..
-        fi
-        cd ./Tincan/trunk/build/
-        echo "Building Tincan binary"
-        make
-        cd ../../..
-        cp ./Tincan/trunk/out/release/x64/ipop-tincan .
-    fi
 
     if [ -z "$visualizer_enabled" ]; then
         echo -e "\e[1;31mEnable visualization? (Y/N): \e[0m"
