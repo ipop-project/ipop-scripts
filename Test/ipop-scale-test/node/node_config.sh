@@ -72,8 +72,8 @@ case $1 in
                 "\n        \"IP4\": \"$Ip4\","\
                 "\n        \"IP4PrefixLen\": $CFx_ip4_mask,"\
                 "\n        \"MTU4\": $CFx_mtu4,"\
-                "\n        \"TapName\": "\ipop_tap0"\,"\
-                "\n        \"IgnoredNetInterfaces\": ["\ipop_tap0"\]"\
+                "\n        \"TapName\": \"ipop_tap0\","\
+                "\n        \"IgnoredNetInterfaces\": [\"ipop_tap0\"]"\
                 "\n      } "\
                 "\n    } "\
                 "\n  },"\
