@@ -59,14 +59,13 @@ function options
 function setup-python
 {
     #Python dependencies for visualizer and ipop python tests
-    sudo apt-get install -y python python-pip python-lxc
+    sudo apt-get install -y python3 python3-pip python3-lxc
     sudo pip install --upgrade pip
     sudo pip install pymongo sleekxmpp psutil
 }
 
 function setup-mongo
 {
-    #Install and start mongodb for use ipop python tests
     sudo apt-get -y install mongodb
 }
 
@@ -88,13 +87,13 @@ function setup-base-container
     sudo lxc-create -n default -t ubuntu
     sudo chroot /var/lib/lxc/default/rootfs apt-get -y update
     sudo chroot /var/lib/lxc/default/rootfs apt-get -y install $DEFAULT_LXC_PACKAGES
-    sudo chroot /var/lib/lxc/default/rootfs apt-get -y install software-properties-common python-software-properties
+    sudo chroot /var/lib/lxc/default/rootfs apt-get -y install software-properties-common python3-software-properties
 
     # install controller dependencies
     if [ $VPNMODE = "switch" ]; then
         sudo pip install sleekxmpp psutil requests
     else
-        sudo chroot /var/lib/lxc/default/rootfs apt-get -y install python-pip
+        sudo chroot /var/lib/lxc/default/rootfs apt-get -y install python3-pip
         sudo chroot /var/lib/lxc/default/rootfs pip install sleekxmpp psutil requests
     fi
 
@@ -257,10 +256,8 @@ function setup-controller
 
 function install-support-serv
 {
-    #Install python dependencies
     setup-python
 
-    #Install mongodb on current machine
     setup-mongo
 
     #configure iptables needed for proper network connectivity
@@ -269,10 +266,9 @@ function install-support-serv
     #Install and setup ejabberd with admin user
     setup-ejabberd
 
-    #Install and setup net-visualizer
     setup-visualizer
 
-    # In switch mode, this node (not the containers) runs IPOP
+    # In switch mode, this node needs to run the vswitch
     if [[ "$VPNMODE" = "switch" ]]; then
         sudo apt-get install -y openvswitch-switch
     fi
@@ -452,7 +448,7 @@ function ipop-start
         sudo chmod 0666 /dev/net/tun
         mkdir -p logs/
         nohup sudo -b ./ipop-tincan &> logs/ctrl.log
-        nohup sudo -b python -m controller.Controller -c ./ipop-config.json &> logs/tincan.log
+        nohup sudo -b python3 -m controller.Controller -c ./ipop-config.json &> logs/tincan.log
     else
         if [[ ! ( -z "$container_to_run" ) ]]; then
             if [ "$container_to_run" = '#' ]; then
@@ -615,7 +611,7 @@ function configure-external-node
 
 function ipop-tests
 {
-    sudo python ipoplxcutils/main.py
+    sudo python3 ipoplxcutils/main.py
 }
 
 function mode
