@@ -12,6 +12,8 @@ DEFAULT_LXC_PACKAGES=$(cat $DEFAULTS_FILE 2>/dev/null | grep LXC_PACKAGES | cut 
 DEFAULT_LXC_CONFIG=$(cat $DEFAULTS_FILE 2>/dev/null | grep LXC_CONFIG | awk '{print $2}')
 DEFAULT_TINCAN_REPO=$(cat $DEFAULTS_FILE 2>/dev/null | grep TINCAN_REPO | awk '{print $2}')
 DEFAULT_TINCAN_BRANCH=$(cat $DEFAULTS_FILE 2>/dev/null | grep TINCAN_REPO | awk '{print $3}')
+DEFAULT_3RD_PARTY_REPO=$(cat $DEFAULTS_FILE 2>/dev/null | grep 3RD_PARTY_REPO | awk '{print $2}')
+DEFAULT_3RD_PARTY_BRANCH=$(cat $DEFAULTS_FILE 2>/dev/null | grep 3RD_PARTH_REPO | awk '{print $3}')
 DEFAULT_CONTROLLERS_REPO=$(cat $DEFAULTS_FILE 2>/dev/null | grep CONTROLLERS_REPO | awk '{print $2}')
 DEFAULT_CONTROLLERS_BRANCH=$(cat $DEFAULTS_FILE 2>/dev/null | grep CONTROLLERS_REPO | awk '{print $3}')
 DEFAULT_VISUALIZER_REPO=$(cat $DEFAULTS_FILE 2>/dev/null | grep VISUALIZER_REPO | awk '{print $2}')
@@ -206,7 +208,23 @@ function setup-tincan
             git checkout $DEFAULT_TINCAN_BRANCH
             cd ..
         fi
-        cd ./Tincan/trunk/build/
+
+        # Set up 3rd party dependencies for Ubuntu
+        cd ./Tincan/external
+        if [ -z "$DEFAULT_3RD_PARTY_REPO" ]; then
+            echo -e "\e[1;31mEnter github URL for 3rd party Tincan dependencies\e[0m"
+            read DEFAULT_3RD_PARTY_REPO
+            if [ -z "$DEFAULT_3RD_PARTY_REPO" ] ; then
+                error "A 3rd party dependencies repo URL is required"
+            fi
+        fi
+        if [ -z $DEFAULT_3RD_PARTY_BRANCH ]; then
+            echo -e "Enter 3rd party dependencies repo branch name:"
+            read DEFAULT_3RD_PARTY_BRANCH
+        fi
+        git clone -b $DEFAULT_3RD_PARTY_BRANCH --single-branch $DEFAULT_3RD_PARTY_REPO
+
+        cd ../trunk/build/
         echo "Building Tincan binary"
         make
         cd ../../..
