@@ -32,7 +32,7 @@ case $1 in
                 "\n    \"LogLevel\": \"DEBUG\""\
                 "\n  },"\
                 "\n  \"TincanInterface\": {"\
-                "\n    \"Enabled\": true,"\
+                "\n    \"Enabled\": true"\
                 "\n  },"\
                 "\n  \"Signal\": {"\
                 "\n    \"Enabled\": true,"\
@@ -76,6 +76,12 @@ case $1 in
                 "\n        \"IgnoredNetInterfaces\": [\"ipop_tap0\"]"\
                 "\n      } "\
                 "\n    } "\
+                "\n  },"\
+                "\n  \"Icc\": {"\
+                "\n    \"Enabled\": true"\
+                "\n  },"\
+                "\n  \"Broadcaster\": {"\
+                "\n    \"Enabled\": true"\
                 "\n  },"\
                 "\n  \"OverlayVisualizer\": {"\
                 "\n    \"Enabled\": $isVisulizerEnabled,"\
