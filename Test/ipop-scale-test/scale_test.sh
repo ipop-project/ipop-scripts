@@ -199,7 +199,7 @@ function setup-tincan
                     error "A Tincan repo URL is required"
                 fi
             fi
-            git clone $DEFAULT_TINCAN_REPO
+            git clone $DEFAULT_TINCAN_REPO Tincan
             if [ -z $DEFAULT_TINCAN_BRANCH ]; then
                 echo -e "Enter git repo branch name:"
                 read DEFAULT_TINCAN_BRANCH
