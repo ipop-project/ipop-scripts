@@ -234,7 +234,7 @@ function setup-tincan
         echo "Building Tincan binary"
         make
         cd ../../..
-        cp ./Tincan/trunk/out/release/x64/ipop-tincan .
+        cp ./Tincan/trunk/out/release/x86_64/ipop-tincan .
     fi
 }
 
