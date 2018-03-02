@@ -30,7 +30,7 @@ NET_IP4=$(echo $NET_TEST | awk '{print $7}')
 function help()
 {
     echo 'Enter from the following options:
-    install-supp-serv              : install critical services used in both, classic and switch modes
+    install-support-serv           : install critical services used in both, classic and switch modes
     prep-def-container             : prepare default container (what goes in depends on the mode)
     containers-create              : create and start containers
     containers-update              : restart containers adding IPOP src changes
@@ -255,7 +255,7 @@ function setup-controller
     fi
 }
 
-function install-supp-serv
+function install-support-serv
 {
     #Install python dependencies
     setup-python
