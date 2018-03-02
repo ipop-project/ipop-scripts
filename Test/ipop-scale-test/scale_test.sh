@@ -375,7 +375,6 @@ function containers-create
             lxc-copy -n default -N node$i;
             sudo lxc-start -n node$i --daemon;
             sudo lxc-attach -n node$i -- bash -c 'sudo mkdir -p $IPOP_HOME; sudo mkdir /dev/net; sudo mknod /dev/net/tun c 10 200; sudo chmod 0666 /dev/net/tun';
-            sudo lxc-attach -n node$i -- bash -c;
             "
             sudo cp -r ./Controllers/controller/ "/var/lib/lxc/node$i/rootfs$IPOP_HOME"
             sudo cp ./ipop-tincan "/var/lib/lxc/node$i/rootfs$IPOP_HOME"
