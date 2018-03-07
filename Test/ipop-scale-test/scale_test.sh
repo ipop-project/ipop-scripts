@@ -60,8 +60,8 @@ function setup-python
 {
     #Python dependencies for visualizer and ipop python tests
     sudo apt-get install -y python3 python3-pip python3-lxc
-    sudo pip install --upgrade pip
-    sudo pip install pymongo sleekxmpp psutil
+    sudo pip3 install --upgrade pip
+    sudo pip3 install pymongo sleekxmpp psutil
 }
 
 function setup-mongo
@@ -91,10 +91,10 @@ function setup-base-container
 
     # install controller dependencies
     if [ $VPNMODE = "switch" ]; then
-        sudo pip install sleekxmpp psutil requests
+        sudo pip3 install sleekxmpp psutil requests
     else
         sudo chroot /var/lib/lxc/default/rootfs apt-get -y install python3-pip
-        sudo chroot /var/lib/lxc/default/rootfs pip install sleekxmpp psutil requests
+        sudo chroot /var/lib/lxc/default/rootfs pip3 install sleekxmpp psutil requests
     fi
 
     config_grep=$(sudo grep "lxc.cgroup.devices.allow = c 10:200 rwm" "$DEFAULT_LXC_CONFIG")
