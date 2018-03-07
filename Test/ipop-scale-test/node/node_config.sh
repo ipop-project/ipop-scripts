@@ -95,7 +95,7 @@ case $1 in
             mkdir -p logs
             sudo chmod 0666 /dev/net/tun
             nohup ./ipop-tincan &> ./logs/tin_start.log &
-            nohup python -m controller.Controller -c ./ipop-config.json &> ./logs/ctrl_start.log &
+            nohup python3 -m controller.Controller -c ./ipop-config.json &> ./logs/ctrl_start.log &
         ;;
     ("kill")
             ps aux | grep "ipop-tincan" | awk '{print $2}' | xargs sudo kill -9
