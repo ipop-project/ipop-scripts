@@ -6,7 +6,7 @@ case $1 in
     ("config")
         # create config file
         ipop_id=$2
-        sample_overlay_id="SampleOverlay1"
+        sample_overlay_id="ABCDEF0"
         vpn_type=$3
         serv_addr=$4
         # options reserved by scale-test
