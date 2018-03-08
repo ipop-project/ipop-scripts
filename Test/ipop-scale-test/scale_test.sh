@@ -454,7 +454,7 @@ function ipop-start
         sudo chmod 0666 /dev/net/tun
         mkdir -p logs/
         nohup sudo -b ./ipop-tincan &> logs/tincan.log
-        nohup sudo -b python3 -m controller.Controller -c ./ipop-config.json &> logs/ctrl.log
+        nohup sudo -b python3 -m controller.Controller -c ./node/ipop-config.json &> logs/ctrl.log
     else
         if [[ ! ( -z "$container_to_run" ) ]]; then
             if [ "$container_to_run" = '#' ]; then
