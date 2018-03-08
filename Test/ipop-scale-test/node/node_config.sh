@@ -7,7 +7,7 @@ case $1 in
         # create config file
         ipop_id=$2
         sample_overlay_id="ABCDEF0"
-        vpn_type=$3
+        ipop_model=$3
         serv_addr=$4
         # options reserved by scale-test
         CFx_xmpp_username="node${ipop_id}@ejabberd"
@@ -24,7 +24,7 @@ case $1 in
         echo -e \
             "{"\
                 "\n  \"CFx\": {"\
-                "\n    \"Model\": \"$vpn_type\","\
+                "\n    \"Model\": \"$ipop_model\","\
                 "\n    \"Overlays\": [\"$sample_overlay_id\"]"\
                 "\n  },"\
                 "\n  \"Logger\": {"\
@@ -68,7 +68,7 @@ case $1 in
                 "\n     }],"\
                 "\n    \"Overlays\": {"\
                 "\n      \"$sample_overlay_id\": { "\
-                "\n        \"Type\": \"$vpn_type\","\
+                "\n        \"Type\": \"$ipop_model\","\
                 "\n        \"IP4\": \"$Ip4\","\
                 "\n        \"IP4PrefixLen\": $CFx_ip4_mask,"\
                 "\n        \"MTU4\": $CFx_mtu4,"\
