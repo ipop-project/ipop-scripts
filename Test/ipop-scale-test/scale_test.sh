@@ -71,8 +71,8 @@ function setup-mongo
 
 function setup-build-deps
 {
-    sudo apt install -y software-properties-common git make libssl-dev g++-4.9
-    sudo update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-4.9 10
+    sudo apt install -y software-properties-common git make libssl-dev g++-5
+    sudo update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-5 10
 }
 
 function setup-base-container
