@@ -736,11 +736,11 @@ while [ -z $user_input ] ; do
             read -p "`echo $'> '`" action
             mode $action
             show_help=false
-            ;;
+        ;;
         ("help")
             help
             show_help=false
-            ;;
+        ;;
     esac
     user_input=""
 done
