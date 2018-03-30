@@ -652,26 +652,12 @@ check-vpn-mode
 
 $@
 
-# NOTE MAKE SURE that you add any new commands here,
-# otherwise the user won't be able to use them!
-VALID_COMMANDS="install-support-serv prep-def-container containers-create"
-VALID_COMMANDS="$VALID_COMMANDS containers-start containers-del"
-VALID_COMMANDS="$VALID_COMMANDS containers-stop containers-update ipop-start"
-VALID_COMMANDS="$VALID_COMMANDS ipop-stop ipop-status quit visualizer-start"
-VALID_COMMANDS="$VALID_COMMANDS visualizer-stop visualizer-status ipop-tests"
-VALID_COMMANDS="$VALID_COMMANDS logs mode help"
-
 show_help=true
 while true ; do
     if "$show_help" = true; then
         echo "$(help)"
     fi
     read -p "`echo $'\n> '`" user_input
-
-    #while [[ -z "$user_input" ]] || ([ -z "$(echo $VALID_COMMANDS | grep -w "$user_input")" ]) ; do
-        #echo -n "Please input a valid option."
-        #read -p "`echo $'\n> '`" user_input
-    #done
 
     cmd=${user_input[0]}
     case $cmd in
