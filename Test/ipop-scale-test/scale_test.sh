@@ -726,7 +726,7 @@ while true ; do
         ;;
         ("mode")
             mode-options
-            read -p "`echo $'> '`" action
+            read -p "`echo $'mode> '`" action
             mode $action
             show_help=false
         ;;
