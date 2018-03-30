@@ -47,6 +47,7 @@ function help()
     logs                           : aggregate ipop logs under ./logs
     mode                           : show or change ipop mode to test
     help                           : show this menu
+    quit                           : quit
     '
 }
 
