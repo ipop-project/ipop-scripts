@@ -46,14 +46,8 @@ function help()
     visualizer-status              : show statuses of visualizer processes
     logs                           : aggregate ipop logs under ./logs
     mode                           : show or change ipop mode to test
+    help                           : show this menu
     '
-}
-
-
-function options
-{
-    read -p "$(help) `echo $'\n> '`" user_input
-    echo $user_input
 }
 
 function setup-python
@@ -658,9 +652,17 @@ check-vpn-mode
 
 $@
 
-if [[ -z $@ ]] ; then
-    line=($(options))
-    cmd=${line[0]}
+VALID_COMMANDS="install-support-serv prep-def-container containers-create containers-start containers-del containers-stop containers-update ipop-start ipop-stop ipop-status quit visualizer-start visualizer-stop visualizer-status ipop-tests logs mode help"
+
+while [ -z $user_input ] ; do
+    read -p "$(help) `echo $'\n> '`" user_input
+
+    while [[ -z "$user_input" ]] || ([ -z "$(echo $VALID_COMMANDS | grep -w "$user_input")" ]) ; do
+        echo -n "Please input a valid option."
+        read -p "`echo $'\n> '`" user_input
+    done
+
+    cmd=${user_input[0]}
     case $cmd in
         ("install-support-serv")
             install-support-serv
@@ -715,5 +717,9 @@ if [[ -z $@ ]] ; then
         read -p "`echo $'> '`" action
         mode $action
         ;;
+        ("help")
+        help
+        ;;
     esac
-fi
+    user_input=""
+done
