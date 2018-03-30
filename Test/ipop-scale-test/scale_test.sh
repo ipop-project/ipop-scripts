@@ -662,16 +662,16 @@ VALID_COMMANDS="$VALID_COMMANDS visualizer-stop visualizer-status ipop-tests"
 VALID_COMMANDS="$VALID_COMMANDS logs mode help"
 
 show_help=true
-while [ -z $user_input ] ; do
+while true ; do
     if "$show_help" = true; then
         echo "$(help)"
     fi
     read -p "`echo $'\n> '`" user_input
 
-    while [[ -z "$user_input" ]] || ([ -z "$(echo $VALID_COMMANDS | grep -w "$user_input")" ]) ; do
-        echo -n "Please input a valid option."
-        read -p "`echo $'\n> '`" user_input
-    done
+    #while [[ -z "$user_input" ]] || ([ -z "$(echo $VALID_COMMANDS | grep -w "$user_input")" ]) ; do
+        #echo -n "Please input a valid option."
+        #read -p "`echo $'\n> '`" user_input
+    #done
 
     cmd=${user_input[0]}
     case $cmd in
@@ -748,6 +748,11 @@ while [ -z $user_input ] ; do
             help
             show_help=false
         ;;
+        *)
+            echo -n "Please input a valid option."
+            show_help=false
+        ;;
+
     esac
     user_input=""
 done
