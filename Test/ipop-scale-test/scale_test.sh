@@ -654,8 +654,12 @@ $@
 
 VALID_COMMANDS="install-support-serv prep-def-container containers-create containers-start containers-del containers-stop containers-update ipop-start ipop-stop ipop-status quit visualizer-start visualizer-stop visualizer-status ipop-tests logs mode help"
 
+show_help=true
 while [ -z $user_input ] ; do
-    read -p "$(help) `echo $'\n> '`" user_input
+    if "$show_help" = true; then
+        echo "$(help)"
+    fi
+    read -p "`echo $'\n> '`" user_input
 
     while [[ -z "$user_input" ]] || ([ -z "$(echo $VALID_COMMANDS | grep -w "$user_input")" ]) ; do
         echo -n "Please input a valid option."
@@ -666,60 +670,77 @@ while [ -z $user_input ] ; do
     case $cmd in
         ("install-support-serv")
             install-support-serv
+            show_help=true
         ;;
         ("prep-def-container")
             prep-def-container
+            show_help=true
         ;;
         ("containers-create")
             containers-create
+            show_help=true
         ;;
         ("containers-start")
             containers-start
+            show_help=false
         ;;
         ("containers-del")
             containers-del
+            show_help=false
         ;;
         ("containers-stop")
             containers-stop
+            show_help=false
         ;;
         ("containers-update")
             containers-update
+            show_help=true
         ;;
         ("ipop-start")
             ipop-start
+            show_help=false
         ;;
         ("ipop-stop")
             ipop-stop
+            show_help=false
         ;;
         ("ipop-status")
             ipop-status
+            show_help=false
         ;;
         ("quit")
             exit 0
         ;;
         ("visualizer-start")
             visualizer-start
+            show_help=false
         ;;
         ("visualizer-stop")
             visualizer-stop
+            show_help=false
         ;;
         ("visualizer-status")
             visualizer-status
+            show_help=false
         ;;
         ("ipop-tests")
             ipop-tests
+            show_help=true
         ;;
         ("logs")
             logs
+            show_help=false
         ;;
         ("mode")
-        mode-options
-        read -p "`echo $'> '`" action
-        mode $action
-        ;;
+            mode-options
+            read -p "`echo $'> '`" action
+            mode $action
+            show_help=false
+            ;;
         ("help")
-        help
-        ;;
+            help
+            show_help=false
+            ;;
     esac
     user_input=""
 done
