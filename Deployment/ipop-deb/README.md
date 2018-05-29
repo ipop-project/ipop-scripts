@@ -1,4 +1,4 @@
-#IPOP-DEBIAN PACKAGE
+# IPOP-DEBIAN PACKAGE
 
 
 1) After generating the Tincan binary, the generated ipop-tincan binary file should be copied into the "ipop-vpn/opt/ipop-vpn" directory.
