@@ -5,7 +5,7 @@
 
 2) Also, the "controllers" subdirectory under the "Controllers" directory should also be copied into the "ipop-vpn/opt/ipop-vpn" directory.
 
-3) The config file should be copied into the "ipop-vpn/etc/ipop-vpn" directory. The config file should be properly completed before/after copying into the directory.
+3) The config file, "config.json", should be copied into the "ipop-vpn/etc/ipop-vpn" directory. The config file should be properly completed before/after copying into the directory.
 
 4) Make sure the current directory is "ipop-deb". And then run the following command to build the ipop-vpn debain package:
 
@@ -13,7 +13,7 @@
 
 5) To install the ipop-vpn software, run the following command in the same directory:
 
-		sudo apt-get install ./ipop-vpn
+		sudo apt-get install ./ipop-vpn.deb
 
 This command places the binary files in the /opt/ipop-vpn and the config file in /etc/ipop-vpn directories. The ipop.service file is placed in the /etc/systemd/system directory.
 
